@@ -16,17 +16,29 @@ import java.util.Set;
 
 /**
  * Apothic Attributes 模组联动。
+ * <p>
+ * 在 Apothic Attributes 模组加载时，按其提供的属性标识构建各分组的属性条目，
+ * 供随机属性生成器选用；模组未加载时各分组均为空列表。
+ * 属性通过标识符在运行时查找，避免直接依赖该模组。
  */
 public final class ApothicAttributesIntegration {
 
+    /** Apothic Attributes 的模组标识符 */
     private static final String APOTHIC_ATTRIBUTES_MODID = "apothic_attributes";
 
+    /** 攻击类属性条目 */
     public static final List<AttributeEntry> ATTACK_ATTRS;
+    /** 交互类属性条目 */
     public static final List<AttributeEntry> INTERACT_ATTRS;
+    /** 剑专属属性条目 */
     public static final List<AttributeEntry> SWORD_ATTRS;
+    /** 挖掘工具专属属性条目 */
     public static final List<AttributeEntry> DIGGER_ATTRS;
+    /** 护甲属性条目 */
     public static final List<AttributeEntry> ARMOR_ATTRS;
+    /** 远程武器专属属性条目 */
     public static final List<AttributeEntry> RANGED_ATTRS;
+    /** 通用属性条目 */
     public static final List<AttributeEntry> COMMON_ATTRS;
 
     static {
@@ -114,12 +126,33 @@ public final class ApothicAttributesIntegration {
         COMMON_ATTRS   = commonAttrs;
     }
 
+    /**
+     * 构建属性条目（不设置步长与最小幅值）。
+     *
+     * @param path         属性路径
+     * @param min          数值下限
+     * @param max          数值上限
+     * @param allowedSlots 允许的装备槽位组集合
+     * @param att          属性运算方式
+     * @return 属性条目，属性不存在时返回 null
+     */
     @Nullable
     private static AttributeEntry attr(String path, double min, double max,
                                        Set<EquipmentSlotGroup> allowedSlots, ATT att) {
         return attr(path, min, max, allowedSlots, 0, 0, att);
     }
 
+    /**
+     * 构建属性条目（不设置最小幅值）。
+     *
+     * @param path         属性路径
+     * @param min          数值下限
+     * @param max          数值上限
+     * @param allowedSlots 允许的装备槽位组集合
+     * @param step         数值量化步长
+     * @param att          属性运算方式
+     * @return 属性条目，属性不存在时返回 null
+     */
     @Nullable
     private static AttributeEntry attr(String path, double min, double max,
                                        Set<EquipmentSlotGroup> allowedSlots,
@@ -127,6 +160,22 @@ public final class ApothicAttributesIntegration {
         return attr(path, min, max, allowedSlots, step, 0, att);
     }
 
+    /**
+     * 构建属性条目。
+     * <p>
+     * 以 Apothic Attributes 命名空间与给定路径拼接标识符，
+     * 在属性注册表中查找对应属性并包装为持有者；
+     * 属性不存在时返回 null。
+     *
+     * @param path         属性路径
+     * @param min          数值下限
+     * @param max          数值上限
+     * @param allowedSlots 允许的装备槽位组集合
+     * @param step         数值量化步长
+     * @param minMagnitude 最小幅值要求
+     * @param att          属性运算方式
+     * @return 属性条目，属性不存在时返回 null
+     */
     @Nullable
     private static AttributeEntry attr(String path, double min, double max,
                                        Set<EquipmentSlotGroup> allowedSlots,
@@ -138,6 +187,12 @@ public final class ApothicAttributesIntegration {
         return new AttributeEntry(holder, min, max, allowedSlots, step, minMagnitude, att);
     }
 
+    /**
+     * 将若干属性条目（可含 null）收集为不可变列表。
+     *
+     * @param entries 属性条目数组，允许包含 null
+     * @return 过滤 null 后的不可变列表
+     */
     private static List<AttributeEntry> listOf(@Nullable AttributeEntry... entries) {
         var result = new ArrayList<AttributeEntry>(entries.length);
         for (AttributeEntry e : entries) {
@@ -146,5 +201,10 @@ public final class ApothicAttributesIntegration {
         return List.copyOf(result);
     }
 
+    /**
+     * 私有构造函数，防止实例化。
+     * <p>
+     * 该类只提供静态字段与方法，不需要实例。
+     */
     private ApothicAttributesIntegration() {}
 }

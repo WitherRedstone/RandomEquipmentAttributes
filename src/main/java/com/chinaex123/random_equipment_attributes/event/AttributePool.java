@@ -20,9 +20,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 随机属性池。
+ * <p>
+ * 定义各类物品可用的属性条目集合，包括通用、攻击、交互、剑专属、挖掘工具专属与护甲等分组，
+ * 并提供按物品类型选择适用属性池的方法。
+ * 各条目通过 {@link AttributeEntry} 描述属性的取值范围、步长、最小幅值、适用槽位与运算方式。
+ */
 public final class AttributePool {
 
     // ================== 通用属性 ==================
+
+    /** 通用属性池，适用于所有物品类型 */
     public static final List<AttributeEntry> COMMON_ATTRS = List.of(
             // 移动速度（%）[百分制计算]
             new AttributeEntry(Attributes.MOVEMENT_SPEED, -0.25, 0.25,
@@ -36,6 +45,8 @@ public final class AttributePool {
     );
 
     // ================== 攻击类 ==================
+
+    /** 攻击属性池，适用于主手武器 */
     public static final List<AttributeEntry> ATTACK_ATTRS = List.of(
             // 攻击伤害[百分制计算]
             new AttributeEntry(Attributes.ATTACK_DAMAGE, -0.35, 0.35,
@@ -46,6 +57,8 @@ public final class AttributePool {
     );
 
     // ================== 交互类（所有主手物品都能用） ==================
+
+    /** 交互属性池，适用于所有主手物品 */
     public static final List<AttributeEntry> INTERACT_ATTRS = List.of(
             // 方块交互距离[数字计算]
             new AttributeEntry(Attributes.BLOCK_INTERACTION_RANGE, -3.0, 3.0,
@@ -56,6 +69,8 @@ public final class AttributePool {
     );
 
     // ================== 剑专属 ==================
+
+    /** 剑专属属性池 */
     public static final List<AttributeEntry> SWORD_ATTRS = List.of(
             // 横扫伤害比例（%）[数字计算]
             new AttributeEntry(Attributes.SWEEPING_DAMAGE_RATIO, -0.05, 0.05,
@@ -63,6 +78,8 @@ public final class AttributePool {
     );
 
     // ================== 挖掘工具专属 ==================
+
+    /** 挖掘工具专属属性池 */
     public static final List<AttributeEntry> DIGGER_ATTRS = List.of(
             // 方块破坏速度[数字计算]
             new AttributeEntry(Attributes.BLOCK_BREAK_SPEED, -1.0, 1.0,
@@ -70,6 +87,8 @@ public final class AttributePool {
     );
 
     // ================== 护甲 ==================
+
+    /** 护甲属性池，适用于各类护甲 */
     public static final List<AttributeEntry> ARMOR_ATTRS = List.of(
             // 护甲值[百分制计算]
             new AttributeEntry(Attributes.ARMOR, -1.0, 1.0,
@@ -118,8 +137,26 @@ public final class AttributePool {
                     Set.of(EquipmentSlotGroup.ARMOR), 0, 0.02, ATT.ADD_VALUE)
     );
 
+    /**
+     * 私有构造函数，防止实例化。
+     * <p>
+     * 该类只提供静态字段与方法，不需要实例。
+     */
     private AttributePool() {}
 
+    /**
+     * 根据物品类型与目标槽位选择适用的属性池。
+     * <p>
+     * 按护甲、剑、挖掘工具与其他主手物品分别选取对应的属性池：
+     * 护甲使用护甲池；剑使用攻击、交互与剑专属池；
+     * 挖掘工具使用交互与挖掘专属池，斧额外加入攻击池；
+     * 其他物品至少使用交互池，远程武器与重锤额外加入攻击池，
+     * 远程武器再加远程专属池。最后为所有类型追加通用池与集成属性池。
+     *
+     * @param stack      物品堆
+     * @param targetSlot 目标装备槽位
+     * @return 该物品适用的属性条目列表
+     */
     public static List<AttributeEntry> selectFor(ItemStack stack, EquipmentSlot targetSlot) {
         List<AttributeEntry> pools = new ArrayList<>();
         var item = stack.getItem();
@@ -128,7 +165,7 @@ public final class AttributePool {
             pools.addAll(ARMOR_ATTRS);
             pools.addAll(ApothicAttributesIntegration.ARMOR_ATTRS);
         } else if (item instanceof SwordItem) {
-            // 剑：攻击 + 交互 + 剑专属
+            // 剑
             pools.addAll(ATTACK_ATTRS);
             pools.addAll(INTERACT_ATTRS);
             pools.addAll(SWORD_ATTRS);
@@ -136,21 +173,21 @@ public final class AttributePool {
             pools.addAll(ApothicAttributesIntegration.INTERACT_ATTRS);
             pools.addAll(ApothicAttributesIntegration.SWORD_ATTRS);
         } else if (item instanceof DiggerItem) {
-            // 挖掘工具：交互 + 挖掘专属
+            // 挖掘工具
             pools.addAll(INTERACT_ATTRS);
             pools.addAll(DIGGER_ATTRS);
             pools.addAll(ApothicAttributesIntegration.INTERACT_ATTRS);
             pools.addAll(ApothicAttributesIntegration.DIGGER_ATTRS);
-            // 斧（AxeItem）既是挖掘工具也是武器 → 额外加攻击类
+            // 斧
             if (item instanceof AxeItem) {
                 pools.addAll(ATTACK_ATTRS);
                 pools.addAll(ApothicAttributesIntegration.ATTACK_ATTRS);
             }
         } else {
-            // 其他主手物品（盾等）：只用交互
+            // 其他主手物品：只用交互
             pools.addAll(INTERACT_ATTRS);
             pools.addAll(ApothicAttributesIntegration.INTERACT_ATTRS);
-            // 远程武器（弓/弩/三叉戟）+ 重锤：交互 + 攻击类
+            // 远程武器 + 重锤：交互 + 攻击类
             if (item instanceof BowItem || item instanceof CrossbowItem
                     || item instanceof TridentItem || item instanceof MaceItem) {
                 pools.addAll(ATTACK_ATTRS);
@@ -168,18 +205,58 @@ public final class AttributePool {
         return pools;
     }
 
+    /**
+     * 属性运算方式枚举。
+     * <p>
+     * ADD_VALUE 表示加算，ADD_MULTIPLIED_BASE 表示基于基础值乘算，
+     * ADD_MULTIPLIED_TOTAL 表示基于当前总值乘算。
+     */
     public enum ATT {
         ADD_VALUE,             // 加算
         ADD_MULTIPLIED_BASE,   // 基础值乘算
         ADD_MULTIPLIED_TOTAL   // 当前总值乘算
     }
 
+    /**
+     * 属性条目记录。
+     * <p>
+     * 描述单个属性的取值范围、适用槽位、量化步长、最小幅值与运算方式。
+     *
+     * @param attribute    属性持有者
+     * @param min          数值下限
+     * @param max          数值上限
+     * @param allowedSlots 允许的装备槽位组集合
+     * @param step         数值量化步长
+     * @param minMagnitude 最小幅值要求
+     * @param att          属性运算方式
+     */
     public record AttributeEntry(Holder<Attribute> attribute, double min, double max,
                                  Set<EquipmentSlotGroup> allowedSlots, double step, double minMagnitude, ATT att) {
+
+        /**
+         * 构造属性条目（不设置步长与最小幅值）。
+         *
+         * @param attribute    属性持有者
+         * @param min          数值下限
+         * @param max          数值上限
+         * @param allowedSlots 允许的装备槽位组集合
+         * @param att          属性运算方式
+         */
         public AttributeEntry(Holder<Attribute> attribute, double min, double max,
                               Set<EquipmentSlotGroup> allowedSlots, ATT att) {
             this(attribute, min, max, allowedSlots, 0, 0, att);
         }
+
+        /**
+         * 构造属性条目（不设置最小幅值）。
+         *
+         * @param attribute    属性持有者
+         * @param min          数值下限
+         * @param max          数值上限
+         * @param allowedSlots 允许的装备槽位组集合
+         * @param step         数值量化步长
+         * @param att          属性运算方式
+         */
         public AttributeEntry(Holder<Attribute> attribute, double min, double max,
                               Set<EquipmentSlotGroup> allowedSlots, double step, ATT att) {
             this(attribute, min, max, allowedSlots, step, 0, att);

@@ -1,6 +1,8 @@
 package com.chinaex123.random_equipment_attributes;
 
 import com.chinaex123.random_equipment_attributes.config.REAConfig;
+import com.chinaex123.random_equipment_attributes.init.*;
+import com.chinaex123.random_equipment_attributes.network.REAPacketHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
@@ -16,6 +18,13 @@ public class RandomEquipmentAttributes {
 
     public RandomEquipmentAttributes(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, REAConfig.SPEC);
+
+        REAItems.register(modEventBus);
+        REABlocks.register(modEventBus);
+        REABlockEntities.register(modEventBus);
+        ModCreativeTabs.register(modEventBus);
+        REAPacketHandler.register(modEventBus);
+        REAMenuTypes.register(modEventBus);
     }
 
     public static ResourceLocation id(String name) {

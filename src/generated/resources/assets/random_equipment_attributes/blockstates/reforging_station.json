@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "random_equipment_attributes:block/reforging_station",
+      "y": 270
+    },
+    "facing=north": {
+      "model": "random_equipment_attributes:block/reforging_station",
+      "y": 180
+    },
+    "facing=south": {
+      "model": "random_equipment_attributes:block/reforging_station"
+    },
+    "facing=west": {
+      "model": "random_equipment_attributes:block/reforging_station",
+      "y": 90
+    }
+  }
+}

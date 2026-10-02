@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "random_equipment_attributes:block/reforging_station_bottom",
+    "east": "random_equipment_attributes:block/reforging_station_side",
+    "north": "random_equipment_attributes:block/reforging_station_front",
+    "particle": "random_equipment_attributes:block/reforging_station_front",
+    "south": "random_equipment_attributes:block/reforging_station_front",
+    "up": "random_equipment_attributes:block/reforging_station_top",
+    "west": "random_equipment_attributes:block/reforging_station_side"
+  }
+}

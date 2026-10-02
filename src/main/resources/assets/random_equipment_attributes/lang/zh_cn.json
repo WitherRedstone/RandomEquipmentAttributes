@@ -1,3 +1,10 @@
 {
-  "item.piggy_bank.piggy_bank_spawn_egg": "宝箱猪刷怪蛋"
+  "itemGroup.reforging_station_tab": "装备随机属性",
+
+  "block.random_equipment_attributes.reforging_station": "重铸台",
+
+  "msg.rea.reforge.need_item_and_material": "重铸槽里缺少装备或材料",
+  "msg.rea.reforge.need_equipped_first": "该装备还没有随机属性，先装备一次让它生成吧",
+  "msg.rea.reforge.bad_material": "这不是有效的重铸材料",
+  "msg.rea.reforge.failed": "重铸失败，请再试一次"
 }
