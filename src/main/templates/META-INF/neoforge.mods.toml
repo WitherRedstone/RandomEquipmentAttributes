@@ -27,3 +27,10 @@ config="${mod_id}.mixins.json"
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="apothic_attributes"
+    type="optional"
+    versionRange = "[2.10.1,)"
+    ordering="AFTER"
+    side="BOTH"

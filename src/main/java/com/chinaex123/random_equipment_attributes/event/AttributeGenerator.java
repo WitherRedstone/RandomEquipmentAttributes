@@ -34,10 +34,10 @@ public final class AttributeGenerator {
     private AttributeGenerator() {}
 
     /**
-     * 重新生成物品的随机属性。
+     * 重新生成物品的随机属性（重铸台调用）。
      * <p>
-     * 仅当物品已存在随机属性时执行：读取原装备槽位组、清空旧属性后重新生成，
-     * 返回重新生成后物品是否仍带有随机属性。
+     * 仅当物品已存在随机属性时执行：递增重铸计数，按次数计算递增的正面概率，
+     * 读取原装备槽位组、清空旧属性后重新生成，返回是否成功。
      *
      * @param stack 待处理的物品堆
      * @return 重新生成后物品仍带有随机属性返回 true
@@ -45,25 +45,41 @@ public final class AttributeGenerator {
     public static boolean regenerate(ItemStack stack) {
         if (!SlotHelper.hasRandomAttrs(stack)) return false;
 
+        // 递增重铸次数，并据此计算正面概率
+        SlotHelper.incrementReforgeCount(stack);
+        int reforgeCount = SlotHelper.readReforgeCount(stack);
+        double positiveProb = REAConfig.REFORGE_BASE_POSITIVE_PROB.get()
+                + reforgeCount * REAConfig.REFORGE_PROBABILITY_INCREMENT.get() / 100.0;
+        // 封顶 1.0，防止溢出
+        positiveProb = Math.min(positiveProb, 1.0);
+
         EquipmentSlotGroup group = SlotHelper.readSlotGroup(stack);
         SlotHelper.clearRandomAttrs(stack);
-
-        generate(stack, EquipmentSlot.MAINHAND, group);
+        generate(stack, EquipmentSlot.MAINHAND, group, positiveProb);
 
         return SlotHelper.hasRandomAttrs(stack);
     }
 
     /**
-     * 为物品生成随机属性。
-     * <p>
-     * 先按物品类型选取属性池，再按装备槽位组过滤，随后为每个候选构建属性标签；
-     * 从有效候选中随机挑选配置范围内的条数，写入自定义数据并记录装备槽位组。
+     * 为物品生成随机属性（首次装备调用，正负各 50%）。
      *
      * @param stack       待处理的物品堆
      * @param targetSlot  目标装备槽位
      * @param equipGroup  目标装备槽位组
      */
     public static void generate(ItemStack stack, EquipmentSlot targetSlot, EquipmentSlotGroup equipGroup) {
+        generate(stack, targetSlot, equipGroup, 0.5);
+    }
+
+    /**
+     * 为物品生成随机属性，允许指定正面概率。
+     *
+     * @param stack        待处理的物品堆
+     * @param targetSlot   目标装备槽位
+     * @param equipGroup   目标装备槽位组
+     * @param positiveProb 正值的概率（0.0 ~ 1.0）
+     */
+    public static void generate(ItemStack stack, EquipmentSlot targetSlot, EquipmentSlotGroup equipGroup, double positiveProb) {
         Random random = new Random();
 
         // 按物品类型选池
@@ -75,7 +91,7 @@ public final class AttributeGenerator {
         // 遍历所有候选，尝试生成有效 tag
         List<CompoundTag> candidates = new ArrayList<>();
         for (AttributeEntry entry : filteredPool) {
-            CompoundTag tag = buildAttrTag(entry, random);
+            CompoundTag tag = buildAttrTag(entry, random, positiveProb);
             if (tag != null) candidates.add(tag);
         }
         if (candidates.isEmpty()) return;
@@ -126,15 +142,16 @@ public final class AttributeGenerator {
     /**
      * 为单个属性条目构建随机数值的 NBT 标签。
      * <p>
-     * 数值采用正态分布抽样：正负方向各占一半概率，分别在半区间内取绝对值正态分布，
-     * 再按步长量化并做最小幅值约束的循环抽样（最多 20 次）。
+     * 数值采用正态分布抽样：按指定的 positiveProb 决定正负方向，
+     * 分别在对应半区间内取绝对值正态分布，再按步长量化并做最小幅值约束的循环抽样（最多 20 次）。
      * 属性标识缺失或抽样失败时返回 null。
      *
-     * @param entry  属性条目
-     * @param random 随机源
+     * @param entry        属性条目
+     * @param random       随机源
+     * @param positiveProb 正值的概率（0.0 ~ 1.0）
      * @return 属性 NBT 标签，无法生成时返回 null
      */
-    private static CompoundTag buildAttrTag(AttributeEntry entry, Random random) {
+    private static CompoundTag buildAttrTag(AttributeEntry entry, Random random, double positiveProb) {
         ResourceLocation attrRl = BuiltInRegistries.ATTRIBUTE.getKey(entry.attribute().value());
         if (attrRl == null) return null;
 
@@ -148,8 +165,8 @@ public final class AttributeGenerator {
         double val;
         int attempts = 0;
         do {
-            // nextBoolean() 硬决定正负 → 永远 50/50，与 min/max 是否对称无关
-            if (random.nextBoolean()) {
+            // 按 positiveProb 决定正负方向
+            if (random.nextDouble() >= positiveProb) {
                 // 负值：在 [min, 0] 区间内，用绝对值正态 → 密集在 0 附近
                 double negSigma = Math.abs(min) / 2.5;
                 val = Math.clamp(-Math.abs(random.nextGaussian()) * negSigma, min, 0);

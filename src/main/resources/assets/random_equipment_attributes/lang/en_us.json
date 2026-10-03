@@ -1,0 +1,12 @@
+{
+  "itemGroup.reforging_station_tab": "Random Equipment Attributes",
+
+  "block.random_equipment_attributes.reforging_station": "Reforge Station",
+
+  "msg.rea.reforge.need_item_and_material": "The reforging slot is missing equipment or materials.",
+  "msg.rea.reforge.need_equipped_first": "This equipment doesn't have random attributes yet. Equip it once first to generate them.\n\n",
+  "msg.rea.reforge.bad_material": "This is not a valid reforging material.",
+  "msg.rea.reforge.failed": "Reforging failed. Please try again.",
+
+  "tooltip.rea.reforge_count": "Reforged %d times."
+}

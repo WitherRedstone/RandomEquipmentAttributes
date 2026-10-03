@@ -6,5 +6,7 @@
   "msg.rea.reforge.need_item_and_material": "重铸槽里缺少装备或材料",
   "msg.rea.reforge.need_equipped_first": "该装备还没有随机属性，先装备一次让它生成吧",
   "msg.rea.reforge.bad_material": "这不是有效的重铸材料",
-  "msg.rea.reforge.failed": "重铸失败，请再试一次"
+  "msg.rea.reforge.failed": "重铸失败，请再试一次",
+
+  "tooltip.rea.reforge_count": "已重铸 %d 次"
 }

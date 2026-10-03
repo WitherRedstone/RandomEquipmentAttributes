@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "minecraft:smithing_table"
+    },
+    "B": {
+      "tag": "c:gems/amethyst"
+    },
+    "C": {
+      "tag": "c:gems/diamond"
+    },
+    "D": {
+      "tag": "c:gems/emerald"
+    }
+  },
+  "pattern": [
+    "DBD",
+    "CAC",
+    "DBD"
+  ],
+  "result": {
+    "count": 1,
+    "id": "random_equipment_attributes:reforging_station"
+  }
+}

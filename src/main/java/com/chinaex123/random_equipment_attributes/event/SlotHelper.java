@@ -27,6 +27,8 @@ public final class SlotHelper {
     public static final String NBT_KEY_OPERATION = "operation";
     /** 自定义数据中装备槽位组的键名 */
     public static final String NBT_KEY_SLOT_GROUP = "rae_slot_group";
+    /** 自定义数据中重铸次数的键名 */
+    public static final String NBT_KEY_REFORGE_COUNT = "rae_reforge_count";
 
     /**
      * 私有构造函数，防止实例化。
@@ -108,6 +110,29 @@ public final class SlotHelper {
         } catch (IllegalArgumentException e) {
             return EquipmentSlotGroup.MAINHAND;
         }
+    }
+
+    /**
+     * 读取物品的重铸次数。
+     *
+     * @param stack 物品堆
+     * @return 重铸次数，未记录时返回 0
+     */
+    public static int readReforgeCount(ItemStack stack) {
+        CompoundTag tag = getCustomDataTag(stack);
+        return tag.getInt(NBT_KEY_REFORGE_COUNT);
+    }
+
+    /**
+     * 将物品的重铸次数递增 1 并写回。
+     *
+     * @param stack 物品堆
+     */
+    public static void incrementReforgeCount(ItemStack stack) {
+        CompoundTag tag = getCustomDataTag(stack);
+        int count = tag.getInt(NBT_KEY_REFORGE_COUNT);
+        tag.putInt(NBT_KEY_REFORGE_COUNT, count + 1);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
     /**
